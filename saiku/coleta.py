@@ -103,3 +103,17 @@ def coletar_prs(repo: Repository, max_prs: int) -> Tuple[List[dict], List[PullRe
         if len(dados) >= max_prs:
             break
     return dados, correcoes
+
+
+def coletar_arquivos_de_correcoes(
+    correcoes: List[PullRequest], max_prs_arquivos: int
+) -> List[dict]:
+    # lista os arquivos alterados nos prs de correcao; cada pr custa ao menos uma
+    # requisicao extra, por isso a quantidade e limitada por max_prs_arquivos
+    dados = []
+    for pr in correcoes[:max_prs_arquivos]:
+        for arq in pr.get_files():
+            dados.append(
+                {"pr": pr.number, "arquivo": arq.filename, "alteracoes": arq.changes}
+            )
+    return dados
