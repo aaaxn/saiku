@@ -6,6 +6,7 @@ import pandas as pd
 
 # limiares para sinalizar possiveis problemas de manutencao
 DIAS_ISSUE_ANTIGA = 90
+DIAS_PR_DEMORADO = 14
 PROPORCAO_BUGS_ALTA = 0.4
 PROPORCAO_ANTIGAS_ALTA = 0.3
 
@@ -13,11 +14,13 @@ PROPORCAO_ANTIGAS_ALTA = 0.3
 def analisar(issues: List[dict], prs: List[dict], arquivos: List[dict]) -> dict:
     # calcula indicadores e sinais de alerta a partir dos dados coletados
     df_issues = pd.DataFrame(issues)
+    df_prs = pd.DataFrame(prs)
 
     resultado = {
         "indicadores": {},
         "sinais": [],
         "issues_antigas": pd.DataFrame(),
+        "prs_demorados": pd.DataFrame(),
     }
 
     if not df_issues.empty:
@@ -54,6 +57,42 @@ def analisar(issues: List[dict], prs: List[dict], arquivos: List[dict]) -> dict:
             resultado["sinais"].append(
                 f"{len(antigas)} de {len(abertas)} issues abertas têm mais de {DIAS_ISSUE_ANTIGA} dias: "
                 "possível acúmulo de tarefas (backlog estagnado)."
+            )
+
+    if not df_prs.empty:
+        finalizados = df_prs[df_prs["dias_para_fechar"].notna()]
+        demorados = finalizados[finalizados["dias_para_fechar"] >= DIAS_PR_DEMORADO]
+        abertos_antigos = df_prs[
+            (df_prs["estado"] == "open") & (df_prs["dias_aberta"] >= DIAS_PR_DEMORADO)
+        ]
+        resultado["indicadores"].update(
+            {
+                "prs_analisados": len(df_prs),
+                "prs_mesclados": int(df_prs["mesclada"].sum()),
+                "mediana_dias_para_fechar_pr": float(
+                    finalizados["dias_para_fechar"].median()
+                )
+                if not finalizados.empty
+                else 0.0,
+                "prs_demorados_mais_de_14_dias": len(demorados),
+                "prs_abertos_ha_mais_de_14_dias": len(abertos_antigos),
+            }
+        )
+        resultado["prs_demorados"] = demorados.sort_values(
+            "dias_para_fechar", ascending=False
+        )
+
+        if (
+            not finalizados.empty
+            and len(demorados) / len(finalizados) >= PROPORCAO_ANTIGAS_ALTA
+        ):
+            resultado["sinais"].append(
+                f"{len(demorados)} de {len(finalizados)} PRs levaram mais de {DIAS_PR_DEMORADO} dias "
+                "para serem finalizados: possível atraso no processo de revisão de código."
+            )
+        if len(abertos_antigos) > 0:
+            resultado["sinais"].append(
+                f"{len(abertos_antigos)} PRs estão abertos há mais de {DIAS_PR_DEMORADO} dias aguardando revisão."
             )
 
     if not resultado["sinais"]:
