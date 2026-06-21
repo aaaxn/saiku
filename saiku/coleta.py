@@ -1,10 +1,11 @@
 # coleta de dados de issues e pull requests via api do github (pygithub)
 
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from github import Auth, Github
 from github.Issue import Issue
+from github.PullRequest import PullRequest
 from github.Repository import Repository
 
 # palavras-chave para classificar issues/prs como bugs/correcoes
@@ -69,3 +70,36 @@ def coletar_issues(repo: Repository, max_issues: int) -> List[dict]:
         if len(dados) >= max_issues:
             break
     return dados
+
+
+def coletar_prs(repo: Repository, max_prs: int) -> Tuple[List[dict], List[PullRequest]]:
+    # coleta os prs mais recentes e retorna tambem os prs de correcao mesclados,
+    # para inspecionar os arquivos alterados sem requisicoes extras
+    agora = datetime.now(timezone.utc)
+    dados = []
+    correcoes = []
+    for pr in repo.get_pulls(state="all", sort="created", direction="desc"):
+        labels = [l.name for l in pr.labels]
+        fim = pr.merged_at or pr.closed_at
+        dias_para_fechar = (fim - pr.created_at).days if fim else None
+        dados.append(
+            {
+                "numero": pr.number,
+                "titulo": pr.title,
+                "estado": "merged" if pr.merged_at else pr.state,
+                "labels": ",".join(labels),
+                "eh_correcao": _eh_bug(pr.title, labels),
+                "criada_em": pr.created_at.isoformat(),
+                "finalizada_em": fim.isoformat() if fim else None,
+                "dias_para_fechar": dias_para_fechar,
+                "dias_aberta": (agora - pr.created_at).days
+                if fim is None
+                else dias_para_fechar,
+                "mesclada": pr.merged_at is not None,
+            }
+        )
+        if dados[-1]["eh_correcao"] and dados[-1]["mesclada"]:
+            correcoes.append(pr)
+        if len(dados) >= max_prs:
+            break
+    return dados, correcoes
