@@ -6,10 +6,12 @@ import pandas as pd
 
 # limiares para sinalizar possiveis problemas de manutencao
 DIAS_ISSUE_ANTIGA = 90
+PROPORCAO_BUGS_ALTA = 0.4
+PROPORCAO_ANTIGAS_ALTA = 0.3
 
 
 def analisar(issues: List[dict], prs: List[dict], arquivos: List[dict]) -> dict:
-    # calcula os indicadores das issues a partir dos dados coletados
+    # calcula indicadores e sinais de alerta a partir dos dados coletados
     df_issues = pd.DataFrame(issues)
 
     resultado = {
@@ -42,6 +44,17 @@ def analisar(issues: List[dict], prs: List[dict], arquivos: List[dict]) -> dict:
         resultado["issues_antigas"] = antigas.sort_values(
             "dias_aberta", ascending=False
         )
+
+        if len(bugs) / len(df_issues) >= PROPORCAO_BUGS_ALTA:
+            resultado["sinais"].append(
+                f"Alta proporção de issues relacionadas a bugs "
+                f"({len(bugs)}/{len(df_issues)}): possível instabilidade do sistema."
+            )
+        if not abertas.empty and len(antigas) / len(abertas) >= PROPORCAO_ANTIGAS_ALTA:
+            resultado["sinais"].append(
+                f"{len(antigas)} de {len(abertas)} issues abertas têm mais de {DIAS_ISSUE_ANTIGA} dias: "
+                "possível acúmulo de tarefas (backlog estagnado)."
+            )
 
     if not resultado["sinais"]:
         resultado["sinais"].append(
