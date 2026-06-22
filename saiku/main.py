@@ -8,10 +8,18 @@ from github import GithubException
 
 from saiku import analise, coleta, relatorio
 
+__version__ = "0.1.0"
+
 app = typer.Typer(
     help="Analisa issues e pull requests de um repositório do GitHub "
     "em busca de sinais de dificuldade de manutenção."
 )
+
+
+def _mostrar_versao(valor: bool) -> None:
+    if valor:
+        typer.echo(f"saiku {__version__}")
+        raise typer.Exit()
 
 
 @app.command()
@@ -35,6 +43,13 @@ def analisar(
         None,
         envvar="GITHUB_TOKEN",
         help="Token do GitHub (opcional; sem ele o limite é de 60 requisições/hora).",
+    ),
+    versao: bool = typer.Option(
+        False,
+        "--version",
+        callback=_mostrar_versao,
+        is_eager=True,
+        help="Mostra a versão e sai.",
     ),
 ):
     # coleta, analisa e exporta dados de issues e prs do repositorio informado
