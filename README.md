@@ -60,3 +60,13 @@ Opções principais:
 
 Sem token, a API do GitHub permite apenas 60 requisições por hora; com token, o limite sobe para 5000. Para repositórios grandes, recomenda-se usar um token.
 
+## Como executar os testes localmente
+
+Os testes usam [pytest](https://docs.pytest.org/) e ficam na pasta `tests/`. Com o ambiente já sincronizado (`uv sync`), rode na raiz do projeto:
+
+```bash
+uv run pytest
+```
+
+Os mesmos testes são executados automaticamente a cada push e pull request via **GitHub Actions** (workflow em `.github/workflows/ci.yml`).
+
