@@ -10,6 +10,7 @@ DIAS_ISSUE_ANTIGA = 90
 DIAS_PR_DEMORADO = 14
 PROPORCAO_BUGS_ALTA = 0.4
 PROPORCAO_ANTIGAS_ALTA = 0.3
+MIN_PRS_HOTSPOT = 2
 
 
 @dataclass
@@ -134,10 +135,10 @@ def _analisar_arquivos(df: pd.DataFrame) -> Tuple[List[str], pd.DataFrame]:
     )
 
     sinais = []
-    recorrentes = quentes[quentes["correcoes"] >= 2]
+    recorrentes = quentes[quentes["correcoes"] >= MIN_PRS_HOTSPOT]
     if not recorrentes.empty:
         sinais.append(
-            f"{len(recorrentes)} arquivos aparecem em 2 ou mais PRs de correção: "
+            f"{len(recorrentes)} arquivos aparecem em {MIN_PRS_HOTSPOT} ou mais PRs de correção: "
             "possíveis módulos propensos a bugs (hotspots)."
         )
 
