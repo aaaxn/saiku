@@ -26,3 +26,11 @@ Com base nessas informações, o sistema pode gerar um resumo indicando possíve
 - **CSV/JSON**: formatos para exportar os resultados da análise.
 - **uv**: gerenciador de dependências e ambientes do projeto.
 
+## Instalação
+
+É necessário ter o [uv](https://docs.astral.sh/uv/) instalado. Depois, na raiz do projeto:
+
+```bash
+uv sync
+```
+
