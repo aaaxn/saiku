@@ -58,7 +58,10 @@ Opções principais:
 | `--token` | — | Token do GitHub (também lido da variável `GITHUB_TOKEN`) |
 | `--version` | — | Mostra a versão e sai |
 
-Sem token, a API do GitHub permite apenas 60 requisições por hora; com token, o limite sobe para 5000. Para repositórios grandes, recomenda-se usar um token.
+Limite de requisições da API do GitHub:
+
+- sem token: 60 req/hora
+- com token: 5000 req/hora
 
 ## Como executar os testes localmente
 
