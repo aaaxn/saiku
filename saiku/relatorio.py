@@ -13,7 +13,7 @@ FORMATOS = ("csv", "json", "md")
 
 
 def imprimir_resumo(repo: str, resultado: Resultado) -> None:
-    typer.secho(f"\n Resumo da análise: {repo} ===", bold=True)
+    typer.secho(f"\n=== Resumo da análise: {repo} ===", bold=True)
 
     typer.secho("\nIndicadores:", bold=True)
     for nome, valor in resultado.indicadores.items():
