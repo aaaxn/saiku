@@ -51,7 +51,7 @@ def coletar_issues(repo: Repository, max_issues: int) -> List[dict]:
     for issue in repo.get_issues(state="all", sort="created", direction="desc"):
         if _eh_pull_request(issue):  # a api de issues tambem retorna prs
             continue
-        labels = [l.name for l in issue.labels]
+        labels = [label.name for label in issue.labels]
         fechada_em = issue.closed_at
         dias_aberta = ((fechada_em or agora) - issue.created_at).days
         dados.append(
@@ -79,7 +79,7 @@ def coletar_prs(repo: Repository, max_prs: int) -> Tuple[List[dict], List[PullRe
     dados = []
     correcoes = []
     for pr in repo.get_pulls(state="all", sort="created", direction="desc"):
-        labels = [l.name for l in pr.labels]
+        labels = [label.name for label in pr.labels]
         fim = pr.merged_at or pr.closed_at
         dias_para_fechar = (fim - pr.created_at).days if fim else None
         dados.append(
